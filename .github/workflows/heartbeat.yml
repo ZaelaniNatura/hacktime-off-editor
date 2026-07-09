@@ -62,11 +62,11 @@ jobs:
             ./wakatime-cli-linux-amd64 \
               --entity "$FILE" \
               --project "$PROJECT" \
-              --language "$CATEGORY" \
-              --category "coding" \
+              --category "$CATEGORY" \
               --plugin "github-actions-wakatime/1.0" \
               --write
             
             echo "Heartbeat sent. Sleeping for 7 minutes..."
             sleep 420
           done
+          
