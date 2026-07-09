@@ -33,10 +33,10 @@ jobs:
           PROJECT: ${{ github.event.inputs.project }}
           FILE: ${{ github.event.inputs.file }}
         run: |
-          echo "Starting session: $CATEGORY"
-          echo "📂 Project: $PROJECT | 📄 File: $FILE"
-          echo "System will auto-ping every 7 minutes."
-          echo "⚠️ Don't forget to click 'Cancel run' when you are done working!"
+          echo ") Starting session: $CATEGORY"
+          echo ") 📂 Project: $PROJECT | 📄 File: $FILE"
+          echo ") System will auto-heartbeat every 1.5 minutes."
+          echo ") ⚠️ Don't forget to click 'Cancel run' when you are done working!"
           echo "---------------------------------------------------"
 
           while true; do
@@ -52,6 +52,6 @@ jobs:
                     \"time\": $NOW,
                     \"project\": \"$PROJECT\"
                   }"
-            echo "Heartbeat sent. Sleeping for 7 minutes..."
-            sleep 420
+            echo ") Heartbeat sent. Sleeping for 1.5 minutes..."
+            sleep 90
           done
