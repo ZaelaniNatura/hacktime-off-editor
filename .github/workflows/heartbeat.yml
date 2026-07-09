@@ -1,0 +1,58 @@
+name: Mulai Hacktime Off-Editor
+
+on:
+  workflow_dispatch:
+    inputs:
+      kategori:
+        description: 'Pilih aktivitasmu sekarang:'
+        required: true
+        type: choice
+        options:
+          - Ideation
+          - Resource Creation
+          - Narrative Design
+          - Asset Creation
+
+jobs:
+  run-heartbeat:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Menjalankan Auto-Heartbeat
+        env:
+          API_KEY: ${{ secrets.HACKTIME_API_KEY }}
+          KATEGORI: ${{ github.event.inputs.kategori }}
+        run: |
+          echo "🚀 Memulai sesi: $KATEGORI (auto heartbeat)"
+          echo "Sistem akan berdetak otomatis setiap 7 menit."
+          echo "⚠️ Jangan lupa klik 'Cancel run' jika sudah selesai!"
+          echo "---------------------------------------------------"
+          
+          # Menerjemahkan btoa(apiKey) ke versi Bash GitHub
+          AUTH_B64=$(echo -n "$API_KEY" | base64 -w 0)
+          
+          while true; do
+            # Mengambil waktu saat ini dalam detik (sama seperti Date.now() / 1000)
+            TIMESTAMP=$(date +%s)
+            waktu_lokal=$(date '+%Y-%m-%d %H:%M:%S')
+            
+            echo "[$waktu_lokal] Mengirim detak ke server Hackatime..."
+            
+            curl -s -X POST "https://hackatime.hackclub.com/api/hackatime/v1/users/current/heartbeats" \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Basic $AUTH_B64" \
+              -d "{
+                \"entity\": \"$KATEGORI (Off-Editor)\",
+                \"type\": \"app\",
+                \"time\": $TIMESTAMP,
+                \"project\": \"Stardance\",
+                \"language\": \"$KATEGORI\",
+                \"is_write\": true,
+                \"editor\": \"GitHub Actions\",
+                \"category\": \"designing\"
+              }"
+            
+            echo ""
+            echo "Detak berhasil terkirim. Mengistirahatkan sistem selama 7 menit..."
+            sleep 420
+          done
+          
