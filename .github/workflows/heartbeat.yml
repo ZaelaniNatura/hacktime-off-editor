@@ -1,10 +1,10 @@
-name: Mulai Hacktime Off-Editor
+name: Start Hackatime Off-Editor
 
 on:
   workflow_dispatch:
     inputs:
-      kategori:
-        description: 'Pilih aktivitasmu sekarang:'
+      category:
+        description: 'Choose your activity:'
         required: true
         type: choice
         options:
@@ -12,47 +12,61 @@ on:
           - Resource Creation
           - Narrative Design
           - Asset Creation
+      project:
+        description: 'Project Name (e.g., Jimmy: A Portfolio in Fiction):'
+        required: true
+        type: string
+      file:
+        description: 'Virtual file name:'
+        required: true
+        type: string
+        default: 'index.html'
 
 jobs:
   run-heartbeat:
     runs-on: ubuntu-latest
     steps:
-      - name: Menjalankan Auto-Heartbeat
+      - name: Setup WakaTime CLI & Config File
         env:
-          API_KEY: ${{ secrets.HACKTIME_API_KEY }}
-          KATEGORI: ${{ github.event.inputs.kategori }}
+          WAKATIME_API_KEY: ${{ secrets.HACKTIME_API_KEY }}
         run: |
-          echo "🚀 Memulai sesi: $KATEGORI (auto heartbeat)"
-          echo "Sistem akan berdetak otomatis setiap 7 menit."
-          echo "⚠️ Jangan lupa klik 'Cancel run' jika sudah selesai!"
+          echo "Downloading official WakaTime CLI..."
+          wget -q https://github.com/wakatime/wakatime-cli/releases/latest/download/wakatime-cli-linux-amd64.zip
+          unzip -q wakatime-cli-linux-amd64.zip
+          chmod +x wakatime-cli-linux-amd64
+          
+          echo "Generating ~/.wakatime.cfg file..."
+          cat <<EOF > ~/.wakatime.cfg
+          [settings]
+          api_url = https://hackatime.hackclub.com/api/hackatime/v1
+          api_key = $WAKATIME_API_KEY
+          heartbeat_rate_limit_seconds = 30
+          EOF
+
+      - name: Run Auto-Heartbeat
+        env:
+          CATEGORY: ${{ github.event.inputs.category }}
+          PROJECT: ${{ github.event.inputs.project }}
+          FILE: ${{ github.event.inputs.file }}
+        run: |
+          echo "🚀 Starting session: $CATEGORY"
+          echo "📂 Project: $PROJECT | 📄 File: $FILE"
+          echo "System will auto-ping every 7 minutes."
+          echo "⚠️ Don't forget to click 'Cancel run' when you are done working!"
           echo "---------------------------------------------------"
           
-          # Menerjemahkan btoa(apiKey) ke versi Bash GitHub
-          AUTH_B64=$(echo -n "$API_KEY" | base64 -w 0)
-          
           while true; do
-            # Mengambil waktu saat ini dalam detik (sama seperti Date.now() / 1000)
-            TIMESTAMP=$(date +%s)
-            waktu_lokal=$(date '+%Y-%m-%d %H:%M:%S')
+            local_time=$(date '+%Y-%m-%d %H:%M:%S')
+            echo "[$local_time] Sending heartbeat to Hackatime server..."
             
-            echo "[$waktu_lokal] Mengirim detak ke server Hackatime..."
+            ./wakatime-cli-linux-amd64 \
+              --entity "$FILE" \
+              --project "$PROJECT" \
+              --language "$CATEGORY" \
+              --category "coding" \
+              --plugin "github-actions-wakatime/1.0" \
+              --write
             
-            curl -s -X POST "https://hackatime.hackclub.com/api/hackatime/v1/users/current/heartbeats" \
-              -H "Content-Type: application/json" \
-              -H "Authorization: Basic $AUTH_B64" \
-              -d "{
-                \"entity\": \"$KATEGORI (Off-Editor)\",
-                \"type\": \"app\",
-                \"time\": $TIMESTAMP,
-                \"project\": \"Stardance\",
-                \"language\": \"$KATEGORI\",
-                \"is_write\": true,
-                \"editor\": \"GitHub Actions\",
-                \"category\": \"designing\"
-              }"
-            
-            echo ""
-            echo "Detak berhasil terkirim. Mengistirahatkan sistem selama 7 menit..."
+            echo "Heartbeat sent. Sleeping for 7 minutes..."
             sleep 420
           done
-          
