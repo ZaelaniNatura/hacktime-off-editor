@@ -35,7 +35,7 @@ jobs:
         run: |
           echo ") Starting session: $CATEGORY"
           echo ") 📂 Project: $PROJECT | 📄 File: $FILE"
-          echo ") System will auto-heartbeat every 1.5 minutes."
+          echo ") System will auto-heartbeat every 1 minutes."
           echo ") ⚠️ Don't forget to click 'Cancel run' when you are done working!"
           echo "---------------------------------------------------"
 
@@ -52,6 +52,6 @@ jobs:
                     \"time\": $NOW,
                     \"project\": \"$PROJECT\"
                   }"
-            echo ") Heartbeat sent. Sleeping for 1.5 minutes..."
-            sleep 90
+            echo ") Heartbeat sent. Sleeping for 1 minutes..."
+            sleep 60
           done
