@@ -36,12 +36,10 @@ jobs:
           chmod +x wakatime-cli-linux-amd64
           
           echo "Generating ~/.wakatime.cfg file..."
-          cat <<EOF > ~/.wakatime.cfg
-          [settings]
-          api_url = https://hackatime.hackclub.com/api/hackatime/v1
-          api_key = $WAKATIME_API_KEY
-          heartbeat_rate_limit_seconds = 30
-          EOF
+          echo "[settings]" > ~/.wakatime.cfg
+          echo "api_url = https://hackatime.hackclub.com/api/hackatime/v1" >> ~/.wakatime.cfg
+          echo "api_key = $WAKATIME_API_KEY" >> ~/.wakatime.cfg
+          echo "heartbeat_rate_limit_seconds = 30" >> ~/.wakatime.cfg
 
       - name: Run Auto-Heartbeat
         env:
