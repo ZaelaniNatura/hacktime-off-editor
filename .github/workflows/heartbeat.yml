@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       category:
-        description: 'Choose your activity:'
+        description: 'Category'
         required: true
         type: choice
         options:
@@ -13,19 +13,31 @@ on:
           - Narrative Design
           - Asset Creation
       project:
-        description: 'Project Name (e.g., Jimmy: A Portfolio in Fiction):'
+        description: 'Project Name'
         required: true
         type: string
       file:
-        description: 'Virtual file name:'
+        description: 'File Name'
         required: true
         type: string
         default: 'index.html'
+      confirm:
+        description: 'Check to confirm inputs and prevent accidental runs'
+        required: true
+        type: boolean
+        default: false
 
 jobs:
   run-heartbeat:
     runs-on: ubuntu-latest
     steps:
+      - name: Verify Execution
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "true" ]; then
+            echo "Error: Execution unconfirmed. Aborting."
+            exit 1
+          fi
+
       - name: Run Auto-Heartbeat
         env:
           API_KEY: ${{ secrets.HACKTIME_API_KEY }}
@@ -33,12 +45,13 @@ jobs:
           PROJECT: ${{ github.event.inputs.project }}
           FILE: ${{ github.event.inputs.file }}
         run: |
-          echo ") Starting session: $CATEGORY"
-          echo ") 📂 Project: $PROJECT | 📄 File: $FILE"
-          echo ") System will auto-heartbeat every 1 minutes."
-          echo ") ⚠️ Don't forget to click 'Cancel run' when you are done working!"
-          echo "---------------------------------------------------"
-
+          echo "Session started: $CATEGORY"
+          echo "Project: $PROJECT | File: $FILE"
+          echo "Awaiting 15s delay. Cancel workflow now to abort."
+          sleep 15
+          
+          echo "Commencing auto-heartbeat (1m intervals). Click 'Cancel run' to terminate."
+          
           while true; do
             NOW=$(date +%s.%N)
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] Sending heartbeat..."
@@ -52,6 +65,6 @@ jobs:
                     \"time\": $NOW,
                     \"project\": \"$PROJECT\"
                   }"
-            echo ") Heartbeat sent. Sleeping for 1 minutes..."
             sleep 60
           done
+          
