@@ -26,45 +26,32 @@ jobs:
   run-heartbeat:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup WakaTime CLI & Config File
-        env:
-          WAKATIME_API_KEY: ${{ secrets.HACKTIME_API_KEY }}
-        run: |
-          echo "Downloading official WakaTime CLI..."
-          wget -q https://github.com/wakatime/wakatime-cli/releases/latest/download/wakatime-cli-linux-amd64.zip
-          unzip -q wakatime-cli-linux-amd64.zip
-          chmod +x wakatime-cli-linux-amd64
-          
-          echo "Generating ~/.wakatime.cfg file..."
-          echo "[settings]" > ~/.wakatime.cfg
-          echo "api_url = https://hackatime.hackclub.com/api/hackatime/v1" >> ~/.wakatime.cfg
-          echo "api_key = $WAKATIME_API_KEY" >> ~/.wakatime.cfg
-          echo "heartbeat_rate_limit_seconds = 30" >> ~/.wakatime.cfg
-
       - name: Run Auto-Heartbeat
         env:
+          API_KEY: ${{ secrets.HACKTIME_API_KEY }}
           CATEGORY: ${{ github.event.inputs.category }}
           PROJECT: ${{ github.event.inputs.project }}
           FILE: ${{ github.event.inputs.file }}
         run: |
-          echo "🚀 Starting session: $CATEGORY"
+          echo "Starting session: $CATEGORY"
           echo "📂 Project: $PROJECT | 📄 File: $FILE"
           echo "System will auto-ping every 7 minutes."
           echo "⚠️ Don't forget to click 'Cancel run' when you are done working!"
           echo "---------------------------------------------------"
-          
+
           while true; do
-            local_time=$(date '+%Y-%m-%d %H:%M:%S')
-            echo "[$local_time] Sending heartbeat to Hackatime server..."
-            
-            ./wakatime-cli-linux-amd64 \
-              --entity "$FILE" \
-              --project "$PROJECT" \
-              --category "$CATEGORY" \
-              --plugin "github-actions-wakatime/1.0" \
-              --write
-            
+            NOW=$(date +%s.%N)
+            echo "[$(date '+%Y-%m-%d %H:%M:%S')] Sending heartbeat..."
+            curl -s -X POST "https://hackatime.hackclub.com/api/hackatime/v1/users/current/heartbeats" \
+              -H "Authorization: Bearer $API_KEY" \
+              -H "Content-Type: application/json" \
+              -d "{
+                    \"entity\": \"$FILE\",
+                    \"type\": \"file\",
+                    \"category\": \"$CATEGORY\",
+                    \"time\": $NOW,
+                    \"project\": \"$PROJECT\"
+                  }"
             echo "Heartbeat sent. Sleeping for 7 minutes..."
             sleep 420
           done
-          
