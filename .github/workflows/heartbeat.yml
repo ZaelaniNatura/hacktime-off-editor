@@ -12,6 +12,7 @@ on:
           - Resource Creation
           - Narrative Design
           - Asset Creation
+          - release prep
       project:
         description: 'Project Name'
         required: true
