@@ -13,6 +13,8 @@ on:
           - Narrative Design
           - Asset Creation
           - release prep
+          - coding
+          
       project:
         description: 'Project Name'
         required: true
