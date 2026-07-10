@@ -9,9 +9,12 @@ on:
         type: choice
         options:
           - Ideation
-          - Resource Creation
+          - Research
           - Narrative Design
+          - Resource Creation
           - Asset Creation
+          - Game Design
+          - Hardware Assembly
       project:
         description: 'Project Name'
         required: true
@@ -20,9 +23,8 @@ on:
         description: 'File Name'
         required: true
         type: string
-        default: 'index.html'
       confirm:
-        description: 'Check to confirm inputs and prevent accidental runs'
+        description: 'Double check your project and file name above, no trailing spaces or line breaks. Check this box to start.'
         required: true
         type: boolean
         default: false
@@ -30,11 +32,12 @@ on:
 jobs:
   run-heartbeat:
     runs-on: ubuntu-latest
+    timeout-minutes: 85
     steps:
       - name: Verify Execution
         run: |
           if [ "${{ github.event.inputs.confirm }}" != "true" ]; then
-            echo "Error: Execution unconfirmed. Aborting."
+            echo "Not confirmed, session did not start."
             exit 1
           fi
 
@@ -42,19 +45,31 @@ jobs:
         env:
           API_KEY: ${{ secrets.HACKTIME_API_KEY }}
           CATEGORY: ${{ github.event.inputs.category }}
-          PROJECT: ${{ github.event.inputs.project }}
-          FILE: ${{ github.event.inputs.file }}
+          PROJECT_RAW: ${{ github.event.inputs.project }}
+          FILE_RAW: ${{ github.event.inputs.file }}
         run: |
-          echo "Session started: $CATEGORY"
+          PROJECT=$(printf '%s' "$PROJECT_RAW" | tr -d '\r\n' | sed -e 's/[[:space:]]*$//')
+          FILE=$(printf '%s' "$FILE_RAW" | tr -d '\r\n' | sed -e 's/[[:space:]]*$//')
+
+          echo "Session: $CATEGORY"
           echo "Project: $PROJECT | File: $FILE"
-          echo "Awaiting 15s delay. Cancel workflow now to abort."
-          sleep 15
-          
-          echo "Commencing auto-heartbeat (1m intervals). Click 'Cancel run' to terminate."
-          
+          echo "Give it 20 seconds. Cancel this run now if something looks off. ☕"
+          sleep 20
+
+          echo "Heartbeat running every minute. Cancel the run whenever you're done."
+
+          SESSION_START=$(date +%s)
+          MAX_SECONDS=$((80 * 60))
+
           while true; do
+            ELAPSED=$(( $(date +%s) - SESSION_START ))
+            if [ $ELAPSED -ge $MAX_SECONDS ]; then
+              echo "That's 80 minutes of $CATEGORY, mate. Might be a good time to rest a bit."
+              break
+            fi
+
             NOW=$(date +%s.%N)
-            echo "[$(date '+%Y-%m-%d %H:%M:%S')] Sending heartbeat..."
+            echo "[$(date '+%Y-%m-%d %H:%M:%S')] Heartbeat sent."
             curl -s -X POST "https://hackatime.hackclub.com/api/hackatime/v1/users/current/heartbeats" \
               -H "Authorization: Bearer $API_KEY" \
               -H "Content-Type: application/json" \
@@ -67,4 +82,3 @@ jobs:
                   }"
             sleep 60
           done
-          
