@@ -1,13 +1,15 @@
 # Hackatime Off-Editor Tracker
 
-A lightweight GitHub Actions workflow to log Hackatime heartbeats without opening an IDE or code editor. 
+A lightweight GitHub Actions workflow to log Hackatime heartbeats without opening an IDE or code editor.
 
-This tool is perfect for tracking off-editor work like Ideation, Narrative Design, or Asset Creation directly from your browser, without requiring any local setup or background processes.
+This tool is perfect for tracking off-editor work like Ideation, Research, Narrative Design, Asset Creation, and other project tasks that never touch a text editor, directly from your browser, without requiring any local setup or background processes.
 
 ## Features
-* **Zero Installation:** Runs entirely in the cloud via GitHub Actions.
-* **Resource Efficient:** Requires no local background processes on your device.
-* **Safety Lock:** Requires an explicit confirmation checkbox to prevent accidental runs and unwanted ghost projects on your dashboard.
+
+* **Zero Installation** — Runs entirely in the cloud via GitHub Actions.
+* **Resource Efficient** — Requires no local background processes on your device.
+* **Auto Stop** — Sessions automatically end after 80 minutes, so a forgotten tab won't quietly rack up hours.
+* **Safety Lock** — Requires an explicit confirmation checkbox to prevent accidental runs and unwanted ghost projects on your dashboard.
 
 ---
 
@@ -29,37 +31,38 @@ Before using this tracker, you must add your Hackatime API Key to the repository
 
 ## How to Start Tracking
 
-> [!WARNING]  
-> **Verify Your Project Name**  
-> Hackatime will automatically create a new project on your dashboard if you misspell the project name. Please verify your spelling before executing. The confirmation checkbox is required to prevent accidental typos from ruining your dashboard stats.
+> [!WARNING]
+> **Verify your project name before running.**
+> Hackatime will automatically create a new project on your dashboard if you misspell it. Double check spelling for both **Project Name** and **File Name**, and make sure there's no trailing space or line break at the end of either field. The confirmation checkbox exists to remind you of this, but it won't catch a typo for you.
 
 1. Go to the **Actions** tab in your repository.
 2. On the left sidebar, select the **Start Hackatime Off-Editor** workflow.
 3. Click the **Run workflow** dropdown button on the right side.
 4. Carefully fill out the required parameters:
-   * **Category:** Select your current activity type (e.g., Ideation).
-   * **Project Name:** Type your exact project folder name.
-   * **File Name:** Specify a virtual file name (defaults to `index.html`).
-   * **Confirm:** Check this box to verify your inputs are correct.
+   * **Category** — Select your current activity: Ideation, Research, Narrative Design, Resource Creation, Asset Creation, Game Design, or Hardware Assembly.
+   * **Project Name** — Type your exact project name, as it should appear on your Hackatime dashboard.
+   * **File Name** — Specify a virtual file name. There's no default, so this needs to be filled in manually every run.
+   * **Confirm** — Check this box once you've verified the fields above.
 5. Click the green **Run workflow** button.
 
-*Note: The system includes a 15-second delay before sending the first heartbeat to allow time for cancellation if you spot a mistake.*
+*Note: The workflow waits 20 seconds before sending the first heartbeat, giving you a window to cancel the run if something looks off.*
 
 ---
 
-## How to Stop Tracking (Crucial)
+## How to Stop Tracking
 
-Because this workflow runs in a continuous loop, **your time will keep tracking indefinitely until you manually stop it.** 
+Once started, the workflow keeps sending a heartbeat every minute until one of two things happens:
 
-When you are done working:
-1. Go to the **Actions** tab and click on the currently running workflow instance.
-2. Click the **Cancel run** button in the upper right corner.
-3. Wait for the status to change to "Canceled". Your session is now safely terminated.
+* **You stop it manually** — Go to the **Actions** tab, open the running workflow instance, and click **Cancel run** in the upper right corner. Wait for the status to change to "Canceled" and the session is done.
+* **It stops itself after 80 minutes** — This is a built-in safety limit. The session ends on its own and logs a short message letting you know it's a good time to take a break.
+
+Either way, no session runs longer than 80 minutes.
 
 ---
 
 ## Feedback & Feature Requests
 
 If you have ideas to improve this tool, want to request new categories, or have suggestions for new features:
+
 * Open an **Issue** in this repository to share your thoughts and requests.
 * Feel free to submit a **Pull Request** if you want to contribute directly to the code.
